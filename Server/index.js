@@ -2,6 +2,7 @@ const dotenv = require('dotenv')
 const express = require("express");
 const app = express();
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const usermodel = require('./models/userSchema');
 mongoose.connect('mongodb://localhost:27017/DonateHappiness');
 dotenv.config({ path: './config.env' });
@@ -39,12 +40,18 @@ app.post("/signin", async(req, res) => {
         if (!email || !password) {
             res.status(400).send('Please enter Username and Password')
         }
-        const useremail = await usermodel.findOne({ email: email, password: password });
-        console.log(useremail);
-        if (useremail) {
-            return res.send('Great! User Login sucsessfully')
+        const useremail = await usermodel.findOne({ email: email });
+        // console.log(useremail);
+        if (useremail){
+            const ismatch = await bcrypt.compare(password, useremail.password);
+
+        if (!ismatch) {
+            return res.send('Invalid credentials!')
         } else {
-            return res.send('User not exist')
+            return res.send('Great! User Login sucsessfully')
+        }
+        } else {
+            return res.send('Invalid credentials!')
         }
     } catch (err) {
         res.send(err)
