@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const usermodel = require('./models/userSchema');
 mongoose.connect('mongodb://localhost:27017/DonateHappiness');
 dotenv.config({ path: './config.env' });
@@ -36,22 +37,26 @@ app.post("/signup", async(req, res) => {
 // //signin
 app.post("/signin", async(req, res) => {
     try {
+        let token;
         const { email, password } = req.body;
         if (!email || !password) {
             res.status(400).send('Please enter Username and Password')
         }
-        const useremail = await usermodel.findOne({ email: email });
+        const userlogin = await usermodel.findOne({ email: email });
         // console.log(useremail);
-        if (useremail){
-            const ismatch = await bcrypt.compare(password, useremail.password);
-
+        if (userlogin){
+            const ismatch = await bcrypt.compare(password, userlogin.password);
+            token = await userlogin.generateAuthToken();
+            console.log(token);
+            res.cookie("jwt-token", token, {
+                expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+                httpOnly: true
+            });
+        }
         if (!ismatch) {
             return res.send('Invalid credentials!')
-        } else {
+        }else{
             return res.send('Great! User Login sucsessfully')
-        }
-        } else {
-            return res.send('Invalid credentials!')
         }
     } catch (err) {
         res.send(err)
