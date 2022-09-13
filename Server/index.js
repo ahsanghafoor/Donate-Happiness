@@ -53,10 +53,12 @@ app.post("/signin", async(req, res) => {
                 httpOnly: true
             });
         }
-        if (!ismatch) {
+        if (!userlogin) {
             return res.send('Invalid credentials!')
-        }else{
+        }else if(userlogin){
             return res.send('Great! User Login sucsessfully')
+        }else {
+            return res.send('Invalid credentials!')
         }
     } catch (err) {
         res.send(err)
