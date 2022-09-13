@@ -55,10 +55,8 @@ app.post("/signin", async(req, res) => {
         }
         if (!userlogin) {
             return res.send('Invalid credentials!')
-        }else if(userlogin){
+        }else{
             return res.send('Great! User Login sucsessfully')
-        }else {
-            return res.send('Invalid credentials!')
         }
     } catch (err) {
         res.send(err)
