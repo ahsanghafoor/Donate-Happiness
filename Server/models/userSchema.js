@@ -31,8 +31,9 @@ const userschema = new mongoose.Schema({
         }
     ]
 });
-//password hash
 
+
+//password hash
 userschema.pre('save', async function(next) {
     console.log('hi from server');
     if(this.isModified('password')) {
@@ -53,8 +54,43 @@ userschema.methods.generateAuthToken = async function() {
         console.log(err);
     }
 }
+//DonateBloodSchema 
+// const DonateBloodSchema = new mongoose.Schema({
+//     fullname: {
+//         type: String,
+//         required: true,
+//     },
+//     cnic: {
+//         type: Number,
+//         required: true,
+//     },
+//     bloodtype: {
+//         type: String,
+//         required: true,
+//     },
+//     city: {
+//         type: String,
+//         required: true,
+//     },
+//     donorage: {
+//         type: Number,
+//         required: true,
+//     },
+//     contactno: {
+//         type: Number,
+//         required: true,
+//     },
+//     donoraddress: {
+//         type: String,
+//         required: true,
+//     },
+// });
 
 
-//colllection creation
+//colllection creation for user signup
 const usermodel = mongoose.model("user", userschema);
 module.exports = usermodel;
+
+//Collection creation for donate bloods form
+// const donateblood = mongoose.model("donateblood", DonateBloodSchema);
+// module.exports = donateblood;

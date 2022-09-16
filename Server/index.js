@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const usermodel = require('./models/userSchema');
+const donatebloodmodel = require('./models/donatebloodschema');
 mongoose.connect('mongodb://localhost:27017/DonateHappiness');
 dotenv.config({ path: './config.env' });
 //for connectivity of JSON
@@ -14,7 +15,7 @@ app.use(express.json())
 //Signup API
 app.post("/signup", async(req, res) => {
     const { FirstName, LastName, email, password, cpassword } = req.body;
-    console.log(email)
+    // console.log(email)
     if (!FirstName || !LastName || !email || !password || !cpassword) {
         res.status(400).send('please Fill all the above fields!')
     }
@@ -47,7 +48,7 @@ app.post("/signin", async(req, res) => {
         if (userlogin){
             const ismatch = await bcrypt.compare(password, userlogin.password);
             token = await userlogin.generateAuthToken();
-            console.log(token);
+            // console.log(token);
             res.cookie("jwt-token", token, {
                 expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
                 httpOnly: true
@@ -59,6 +60,27 @@ app.post("/signin", async(req, res) => {
             return res.send('Great! User Login sucsessfully')
         }
     } catch (err) {
+        res.send(err)
+    }
+});
+//donate Blood form
+app.post('/donate-blood', async (req, res) => {
+        const {userID, fullname, cnic, bloodtype, city, donorage, contactno, donoraddress } = req.body;
+        // console.log(req.body)
+        if(!userID|| !fullname || !cnic || !bloodtype || !city || !donorage || !contactno || !donoraddress) {
+            res.status(400).send('please Fill all the above fields!');
+        }
+        try{
+            const postdata = await donatebloodmodel({userID, fullname, cnic, bloodtype, city, donorage, contactno, donoraddress})
+            await postdata.save();
+            const postexist = await donatebloodmodel.find({"userID" : userID})
+            if(postexist){
+                res.send(postexist)
+            }else{
+                res.send("Post not found")
+            }
+        }
+    catch (err) {
         res.send(err)
     }
 });
