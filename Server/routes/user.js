@@ -5,6 +5,7 @@ const { Router } = require('express');
 //Schema
 const usermodel = require('../models/userSchema');
 const donatebloodmodel = require('../models/donatebloodschema');
+const requestbloodmodel = require('../models/requestbloodschema');
 const commentmodel = require('../models/commentmodel');
 const router = express.Router();
 
@@ -82,6 +83,26 @@ router.post('/donate-blood', async (req, res) => {
         res.send(err)
     }
 });
+//Request Blood Form
+router.post('/requestblood', async (req, res) => {
+    const { userID, fullname, cnic,bloodtype, city, requesterage, contactno, requesteraddress } = req.body;
+    if(!userID|| !fullname || !cnic || !bloodtype || !city || !requesterage || !contactno || !requesteraddress) {
+            res.status(400).send('please Fill all the above fields!');
+        }
+    try{
+        const postdata = await requestbloodmodel({userID, fullname, cnic, bloodtype, city, requesterage, contactno, requesteraddress})
+            await postdata.save();
+            const postexist = await requestbloodmodel.find({"userID" : userID})
+            if(postexist){
+                res.send(postexist)
+            }else{
+                res.send("Post not found")
+            }
+    }
+    catch (err){
+        res.send(err)
+    }
+})
 
 // Comment api
 router.post('/comment', async (req, res) => {
