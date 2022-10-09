@@ -7,6 +7,7 @@ const usermodel = require('../models/userSchema');
 const donatebloodmodel = require('../models/donatebloodschema');
 const requestbloodmodel = require('../models/requestbloodschema');
 const commentmodel = require('../models/commentmodel');
+const donationmodel = require('../models/donationschema');
 const router = express.Router();
 
 //User Signup API
@@ -124,6 +125,21 @@ router.post('/comment', async (req, res) => {
         res.send(err)
         }
     });
+//donation
+router.post('/donation', async (req, res) => {
+    const { name, nameapear, donationamount, cvv, cardno} = req.body;
+    if(!name || !nameapear ||!donationamount || !cvv || !cardno){
+        res.status(400).send('please Fill all the above fields!');
+    }
+    try{
+        const donation = await donationmodel({name, nameapear,donationamount, cvv, cardno })
+        await donation.save();
+        res.send('Thanks for your donation');
+    }
+    catch(err){
+        res.send(err)
+    }
+})
 
 module.exports = router;
 // export default router (new method)
