@@ -8,6 +8,7 @@ const donatebloodmodel = require("../models/donatebloodschema");
 const requestbloodmodel = require("../models/requestbloodschema");
 const commentmodel = require("../models/commentmodel");
 const donationmodel = require("../models/donationschema");
+const otp = require("../models/otp");
 const router = express.Router();
 
 //User Signup API
@@ -209,6 +210,75 @@ router.post("/donation", async (req, res) => {
   }
 });
 
+router.post("/email-send", async (req, res) => {
+  let data = await usermodel.findOne({ email: req.body.email });
+  const responcetype = {};
+  if (data) {
+    let otpcode = Math.floor(Math.random() * 10000 + 1);
+    let otpdata = new otp({
+      email: req.body.email,
+      code: otpcode,
+      expireIn: new Date().getTime() + 300 * 1000,
+    });
+    let otpresponce = await otpdata.save();
+    responcetype.statusText = "success";
+    responcetype.message = "Please check your Email Address";
+  } else {
+    responcetype.statusText = "Error";
+    responcetype.message = "Please Enter a valid email address";
+  }
+  res.status(200).json(responcetype);
+});
+//change password
+router.post("/change-password", async (req, res) => {
+  let data = await otp.find({ email: req.body.email, code: req.body.otpcode });
+  const responce = {};
+  if (data) {
+    let currenttime = new Date().getTime();
+    let diff = data.expireIn - currenttime;
+    if (diff < 0) {
+      responce.message = "Token expired";
+      responce.status = "Error";
+    } else {
+      let user = await users.findOne({ email: req.body.email });
+      user.password = req.body.password;
+      user.save();
+      responce.message = "Password changed";
+      responce.status = "Success";
+    }
+  } else {
+    responce.message = "Invalid otp";
+    responce.status = "Error";
+  }
+  res.status(200).json(responce);
+});
+
+const mailer = (email, otp) => {
+  //links.....
+  var nodemailer = require("nodemailer");
+  var transporter = nodemailer.createTransport({
+    service: "gmail",
+    port: 587,
+    secure: false,
+    auth: {
+      user: "",
+      pass: "",
+    },
+  });
+  var mailoptions = {
+    from: "ahsanghafoor2016@gmail.com",
+    to: "ahsan@gmail.com",
+    subject: "Sending email using node js",
+    text: "Thank you!",
+  };
+  transporter.sendMail(mailoptions, function (error, info) {
+    if (error) {
+      console.error(error);
+    } else {
+      console.log("Email sent :" + info.responce);
+    }
+  });
+};
+
 module.exports = router;
 // export default router (new method)
-app.get;
