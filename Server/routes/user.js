@@ -211,18 +211,20 @@ router.post("/donation", async (req, res) => {
 });
 
 router.post("/email-send", async (req, res) => {
-  let data = await usermodel.findOne({ email: req.body.email });
+  const { email } = req.body;
+  let data = await usermodel.findOne({ email: email });
   const responcetype = {};
   if (data) {
     let otpcode = Math.floor(Math.random() * 10000 + 1);
     let otpdata = new otp({
-      email: req.body.email,
+      email: email,
       code: otpcode,
       expireIn: new Date().getTime() + 300 * 1000,
     });
     let otpresponce = await otpdata.save();
     responcetype.statusText = "success";
     responcetype.message = "Please check your Email Address";
+    mailer(email, otpcode);
   } else {
     responcetype.statusText = "Error";
     responcetype.message = "Please Enter a valid email address";
@@ -240,7 +242,7 @@ router.post("/change-password", async (req, res) => {
       responce.message = "Token expired";
       responce.status = "Error";
     } else {
-      let user = await users.findOne({ email: req.body.email });
+      let user = await usermodel.findOne({ email: req.body.email });
       user.password = req.body.password;
       user.save();
       responce.message = "Password changed";
@@ -258,24 +260,24 @@ const mailer = (email, otp) => {
   var nodemailer = require("nodemailer");
   var transporter = nodemailer.createTransport({
     service: "gmail",
-    port: 587,
-    secure: false,
+    // port: 587,
+    // secure: false,
     auth: {
-      user: "",
-      pass: "",
+      user: "029515ahsanghafoor@gmail.com",
+      pass: "vjmhkcokjeviqebg",
     },
   });
   var mailoptions = {
-    from: "ahsanghafoor2016@gmail.com",
-    to: "ahsan@gmail.com",
-    subject: "Sending email using node js",
-    text: "Thank you!",
+    from: "029515ahsanghafoor@gmail.com",
+    to: email,
+    subject: "Reset Your Password At Donate Happiness",
+    html: `Your Otp for Reset Password : ${otp}`,
   };
   transporter.sendMail(mailoptions, function (error, info) {
     if (error) {
       console.error(error);
     } else {
-      console.log("Email sent :" + info.responce);
+      console.log("Email sent :" + info.response);
     }
   });
 };
