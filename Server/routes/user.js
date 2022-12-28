@@ -282,5 +282,18 @@ const mailer = (email, otp) => {
   });
 };
 
+//Charity Sum:
+router.get("/charitySum", async (req, res) => {
+  const totalamount = await donationmodel.aggregate([
+    {
+      $group: {
+        _id: null,
+        donationamount: { $sum: "$donationamount" },
+      },
+    },
+  ]);
+  // console.log(totalamount);
+  res.status(200).send(totalamount);
+});
 module.exports = router;
 // export default router (new method)
